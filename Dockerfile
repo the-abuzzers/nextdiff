@@ -16,7 +16,7 @@ RUN  apt-get update \
 COPY package.json package-lock.json /
 RUN npm install
 
-LABEL "com.github.actions.name"="next-diff-screenshot"
+LABEL "com.github.actions.name"="nextdiff"
 LABEL "com.github.actions.description"="take a screenshot of your changed pages"
 LABEL "com.github.actions.icon"="triangle"
 LABEL "com.github.actions.color"="white"
