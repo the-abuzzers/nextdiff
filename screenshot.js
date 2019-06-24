@@ -35,17 +35,21 @@ async function run() {
     return
   }
 
+  // parse arguments
+  const dir = (tools.arguments.dir || 'pages').replace(/^\/|\/$/g, '')
+  const base = tools.arguments.base || 'master'
+
   console.log('running git to get diff')
   const { stdout: diffResult } = await tools.runInWorkspace('git', [
     'diff',
     '--name-only',
     'HEAD',
-    'origin/master'
+    `origin/${base}`
   ])
   const pages = diffResult
     .split('\n')
-    .filter(l => /^pages\//.test(l))
-    .map(l => l.replace(/^pages/, '').replace(/\.[a-z]+$/, ''))
+    .filter(l => l.startsWith(dir))
+    .map(l => l.slice(dir.length).replace(/\.[a-z]+$/, ''))
 
   if (pages.length === 0) {
     console.log('no page modified, not running')
