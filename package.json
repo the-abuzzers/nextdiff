@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "actions-toolkit": "2.1.0",
+    "now": "15.5.0",
+    "puppeteer": "1.16.0"
+  }
+}
