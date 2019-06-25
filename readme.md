@@ -1,10 +1,14 @@
-## nextdiff
+# nextdiff
 
-Github action for nextjs projects.
+**Github action for Next.js projects.** Takes a screenshot of your changed pages and writes a comment on the PR.
 
-It takes a **screenshot of your changed pages** and comments on commit.
+<div align="center">
+<img src="demo.png" alt="This action comments on the PR with a summary of the changes">
 
-### usage
+<h6>See this PR for real <a href="https://github.com/lucleray/nextdiff-example/pull/2">here</a>.</h6>
+</div>
+
+## Usage
 
 ```h
 workflow "diff" {
@@ -18,13 +22,37 @@ action "nextdiff" {
 }
 ```
 
-In the above code snippet, note:
+In the above code snippet, note that:
 
-- we are using the `deployment_status` event
-- the `ZEIT_TOKEN` and `GITHUB_TOKEN` secrets needs to be added
+- We are using the `deployment_status` event
+- `ZEIT_TOKEN` and `GITHUB_TOKEN` need to be added as secrets
 
-This action uses the deployments that are created on the github repository (you can see them in the _environment_ tab in your repository). Many integrations are already doing that for you : ZEIT Now for github, Github Pages, ...
+This action requires the deployments to be created on the github repository (you can see them in the _environment_ tab in your repository). Many integrations are already doing that for you, for example [ZEIT Now for Github](https://zeit.co/github).
 
-### example
+The `ZEIT_TOKEN` is used to upload the screenshot. [Find out how to generate it](https://zeit.co/blog/introducing-api-tokens-management).
 
-See this repository : [next-diff-example](https://github.com/lucleray/nextdiff-example).
+## Example
+
+See this repository : [nextdiff-example](https://github.com/lucleray/nextdiff-example). And have a look at this [Pull Request](https://github.com/lucleray/nextdiff-example/pull/2).
+
+## Arguments
+
+You can use `args` to tweak the behaviour of this github action.
+
+```h
+action "nextdiff" {
+  uses = "lucleray/nextdiff@master"
+  secrets = ["GITHUB_TOKEN","ZEIT_TOKEN"]
+  args = "--dir app/pages --max 3"
+}
+```
+
+#### `--dir` (optional)
+
+Use this to specify the folder containing pages. Default is `pages`.
+
+For example, if your Next.js app is located in `/app`, set `--dir app/pages`.
+
+#### `--max` (optional)
+
+Set the maximum number of screenshots to display in the Pull Request comment. Default is `6`.
