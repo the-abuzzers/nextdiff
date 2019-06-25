@@ -5,16 +5,37 @@ const { Toolkit } = require('actions-toolkit')
 const exec = promisify(require('child_process').exec)
 const mkdir = promisify(require('fs').mkdir)
 
-function createCommentBody(pages, screenshotsUrl) {
-  return `<details>
-  <summary>See changes</summary>
+function ellipsis(txt, l = 25) {
+  return txt.length > l ? `${txt.slice(0, l - 3)}…` : txt
+}
 
-  | page | screenshot |
-  |-|-|
-  ${pages
-    .map(page => `| \`${page}\` | ![${page}](${screenshotsUrl}${page}.png) |`)
-    .join('\n  ')}
-</details>`
+function createCommentBody(pages, screenshotsUrl, url, max) {
+  const grouped = pages.slice(0, max).reduce((pv, cv, i) => {
+    const j = Math.floor(i / 3)
+    ;(pv[j] || (pv[j] = [])).push(cv)
+    return pv
+  }, [])
+  const rest = pages.slice(6)
+
+  return `#### 📝Changed pages:
+
+${grouped.map(
+  group => `
+| ${group.map(page => `[\`${ellipsis(page)}\`](${url}${page}) |`)}
+| ${group.map(_ => `-|`)}
+| ${group.map(
+    page =>
+      `<a href="${url}${page}"><img src="${screenshotsUrl}${page}" alt="${page}"></a> |`
+  )}
+`
+)}
+
+${
+  rest.length > 0
+    ? `And ${rest.length} other pages:
+${rest.map(page => `- [\`${page}\`](${url}${page})`)}`
+    : ''
+}`
 }
 
 const payload = require(process.env.GITHUB_EVENT_PATH)
@@ -38,6 +59,7 @@ async function run() {
   // parse arguments
   const dir = (tools.arguments.dir || 'pages').replace(/^\/|\/$/g, '')
   const base = tools.arguments.base || 'master'
+  const max = tools.arguments.max ? Number(tools.arguments.max) : 6
 
   console.log('running git to get diff')
   const { stdout: diffResult } = await tools.runInWorkspace('git', [
@@ -65,7 +87,8 @@ async function run() {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   })
-  for (let page of pages) {
+  const firstPages = pages.slice(0, max)
+  for (let page of firstPages) {
     const b = await browser.newPage()
     b.setViewport({ width: 1280, height: 800 })
     await b.goto(url + page)
@@ -89,7 +112,7 @@ async function run() {
     owner,
     repo,
     commit_sha: sha,
-    body: createCommentBody(pages, screenshotsUrl)
+    body: createCommentBody(pages, screenshotsUrl, url, max)
   })
 
   process.exit(0)
