@@ -5,11 +5,23 @@ const { Toolkit } = require('actions-toolkit')
 const exec = promisify(require('child_process').exec)
 const mkdir = promisify(require('fs').mkdir)
 
+const payload = require(process.env.GITHUB_EVENT_PATH)
+const state = payload.deployment_status.state
+const url = payload.deployment_status.target_url
+const sha = payload.deployment.sha
+const shortSha = sha.slice(0, 7)
+const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/')
+
+const tools = new Toolkit({
+  event: ['deployment_status'],
+  secrets: ['GITHUB_TOKEN', 'ZEIT_TOKEN']
+})
+
 function ellipsis(txt, l = 25) {
   return txt.length > l ? `${txt.slice(0, l - 3)}…` : txt
 }
 
-function createCommentBody(pages, screenshotsUrl, url, max) {
+function createCommentBody(pages, screenshotsUrl, max) {
   const grouped = pages.slice(0, max).reduce((pv, cv, i) => {
     const j = Math.floor(i / 3)
     ;(pv[j] || (pv[j] = [])).push(cv)
@@ -17,16 +29,23 @@ function createCommentBody(pages, screenshotsUrl, url, max) {
   }, [])
   const rest = pages.slice(6)
 
-  return `#### 📝Changed pages:
+  return `#### 📝Changed Next.js pages:
 
 ${grouped.map(
   group => `
-|${group.map(page => ` [\`${ellipsis(page)}\`](${url}${page}) |`).join('')}
+|${group
+    .map(
+      page =>
+        ` <a href="${url}${ellipsis(
+          page
+        )}" target="_blank"><code>${page}</code></a> |`
+    )
+    .join('')}
 |${group.map(_ => `-|`).join('')}
 |${group
     .map(
       page =>
-        ` <a href="${url}${page}"><img src="${screenshotsUrl}${page}.png" alt="Screenshot of ${page}" width="200"></a> |`
+        ` <a href="${url}${page}" target=“_blank”><img src="${screenshotsUrl}${page}.png" alt="Screenshot of ${page}" width="200"></a> |`
     )
     .join('')}
 `
@@ -35,21 +54,17 @@ ${grouped.map(
 ${
   rest.length > 0
     ? `And ${rest.length} other pages:
-${rest.map(page => `- [\`${page}\`](${url}${page})`).join('\n')}`
+${rest
+  .map(
+    page =>
+      `- <a href="${url}${page}" target="_blank"><code><b>${page}</b></code></a>`
+  )
+  .join('\n')}`
     : ''
-}`
 }
 
-const payload = require(process.env.GITHUB_EVENT_PATH)
-const state = payload.deployment_status.state
-const url = payload.deployment_status.target_url
-const sha = payload.deployment.sha
-const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/')
-
-const tools = new Toolkit({
-  event: ['deployment_status'],
-  secrets: ['GITHUB_TOKEN', 'ZEIT_TOKEN']
-})
+Commit <a href="https://github.com/${owner}/${repo}/commit/${sha}" target="_blank"><code>${shortSha}</code></a> (<a href="${url}" target="_blank">${url}</a>)`
+}
 
 async function run() {
   if (state !== 'success') {
@@ -114,7 +129,7 @@ async function run() {
     owner,
     repo,
     commit_sha: sha,
-    body: createCommentBody(pages, screenshotsUrl, url, max)
+    body: createCommentBody(pages, screenshotsUrl, max)
   })
 
   process.exit(0)
