@@ -9,7 +9,6 @@ const payload = require(process.env.GITHUB_EVENT_PATH)
 const state = payload.deployment_status.state
 const url = payload.deployment_status.target_url
 const sha = payload.deployment.sha
-const shortSha = sha.slice(0, 7)
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/')
 
 const tools = new Toolkit({
@@ -18,7 +17,7 @@ const tools = new Toolkit({
 })
 
 function ellipsis(txt, l = 25) {
-  return txt.length > l ? `${txt.slice(0, l - 3)}…` : txt
+  return txt.length > l ? `…${txt.slice(-22)}` : txt
 }
 
 function createCommentBody(pages, screenshotsUrl, max) {
@@ -33,18 +32,36 @@ function createCommentBody(pages, screenshotsUrl, max) {
 
 ${grouped.map(
   group => `
-|${group
-    .map(
-      page => ` <a href="${url}${ellipsis(page)}"><code>${page}</code></a> |`
-    )
-    .join('')}
-|${group.map(_ => `-|`).join('')}
-|${group
-    .map(
-      page =>
-        ` <a href="${url}${page}" target=“_blank”><img src="${screenshotsUrl}${page}.png" alt="Screenshot of ${page}" width="200"></a> |`
-    )
-    .join('')}
+<table>
+  <thead>
+    <tr>
+      ${group
+        .map(
+          page =>
+            `<th>
+              <a href="${url}${page}">
+                <code>${ellipsis(page)}</code>
+              </a>
+            </th>`
+        )
+        .join('')}
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      ${group
+        .map(
+          page =>
+            `<td valign="top">
+              <a href="${url}${page}" target=“_blank”>
+                <img src="${screenshotsUrl}${page}.png" alt="Screenshot of ${page}" width="200">
+              </a>
+            </td>`
+        )
+        .join('')}
+    </tr>
+  </tbody>
+</table>
 `
 )}
 
@@ -57,7 +74,7 @@ ${rest
     : ''
 }
 
-Commit <a href="https://github.com/${owner}/${repo}/commit/${sha}"><code>${shortSha}</code></a> (<a href="${url}">${url}</a>).`
+Commit ${sha} (<a href="${url}">${url}</a>).`
 }
 
 async function upsertComment(pull, body) {
