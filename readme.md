@@ -5,7 +5,7 @@
 <div align="center">
 <img src="demo.png" alt="This action comments on the PR with a summary of the changes">
 
-<h6>See this PR for real <a href="https://github.com/lucleray/nextdiff-example/pull/2">here</a>.</h6>
+<h6>See this PR for real <a href="https://github.com/zeit/nextdiff-example/pull/2">here</a>.</h6>
 </div>
 
 ## Usage
@@ -17,7 +17,7 @@ workflow "diff" {
 }
 
 action "nextdiff" {
-  uses = "lucleray/nextdiff@master"
+  uses = "zeit/nextdiff@master"
   secrets = ["GITHUB_TOKEN","ZEIT_TOKEN"]
 }
 ```
@@ -33,7 +33,7 @@ The `ZEIT_TOKEN` is used to upload the screenshot. [Find out how to generate it]
 
 ## Example
 
-See this repository : [nextdiff-example](https://github.com/lucleray/nextdiff-example). And have a look at this [Pull Request](https://github.com/lucleray/nextdiff-example/pull/2).
+See this repository : [nextdiff-example](https://github.com/zeit/nextdiff-example). And have a look at this [Pull Request](https://github.com/zeit/nextdiff-example/pull/2).
 
 ## Arguments
 
@@ -41,7 +41,7 @@ You can use `args` to tweak the behaviour of this github action.
 
 ```h
 action "nextdiff" {
-  uses = "lucleray/nextdiff@master"
+  uses = "zeit/nextdiff@master"
   secrets = ["GITHUB_TOKEN","ZEIT_TOKEN"]
   args = "--dir app/pages --max 3"
 }
