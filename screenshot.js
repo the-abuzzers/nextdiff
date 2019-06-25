@@ -141,7 +141,7 @@ async function run() {
   })
   const firstPages = pages.slice(0, max)
   for (let page of firstPages) {
-    await mkdir(join(__dirname, dirname(page)), { recursive: true })
+    await mkdir(join(__dirname, 'dist', dirname(page)), { recursive: true })
     const b = await browser.newPage()
     b.setViewport({ width: 1280, height: 800 })
     await b.goto(url + page)
