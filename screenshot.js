@@ -21,19 +21,21 @@ function createCommentBody(pages, screenshotsUrl, url, max) {
 
 ${grouped.map(
   group => `
-| ${group.map(page => `[\`${ellipsis(page)}\`](${url}${page}) |`)}
-| ${group.map(_ => `-|`)}
-| ${group.map(
-    page =>
-      `<a href="${url}${page}"><img src="${screenshotsUrl}${page}" alt="${page}"></a> |`
-  )}
+|${group.map(page => ` [\`${ellipsis(page)}\`](${url}${page}) |`).join('')}
+|${group.map(_ => `-|`).join('')}
+|${group
+    .map(
+      page =>
+        ` <a href="${url}${page}"><img src="${screenshotsUrl}${page}.png" alt="Screenshot of ${page}" width="200"></a> |`
+    )
+    .join('')}
 `
 )}
 
 ${
   rest.length > 0
     ? `And ${rest.length} other pages:
-${rest.map(page => `- [\`${page}\`](${url}${page})`)}`
+${rest.map(page => `- [\`${page}\`](${url}${page})`).join('\n')}`
     : ''
 }`
 }
