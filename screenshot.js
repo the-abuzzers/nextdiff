@@ -35,10 +35,7 @@ ${grouped.map(
   group => `
 |${group
     .map(
-      page =>
-        ` <a href="${url}${ellipsis(
-          page
-        )}" target="_blank"><code>${page}</code></a> |`
+      page => ` <a href="${url}${ellipsis(page)}"><code>${page}</code></a> |`
     )
     .join('')}
 |${group.map(_ => `-|`).join('')}
@@ -55,15 +52,12 @@ ${
   rest.length > 0
     ? `And ${rest.length} other pages:
 ${rest
-  .map(
-    page =>
-      `- <a href="${url}${page}" target="_blank"><code><b>${page}</b></code></a>`
-  )
+  .map(page => `- <a href="${url}${page}"><code><b>${page}</b></code></a>`)
   .join('\n')}`
     : ''
 }
 
-Commit <a href="https://github.com/${owner}/${repo}/commit/${sha}" target="_blank"><code>${shortSha}</code></a> (<a href="${url}" target="_blank">${url}</a>)`
+Commit <a href="https://github.com/${owner}/${repo}/commit/${sha}"><code>${shortSha}</code></a> (<a href="${url}">${url}</a>)`
 }
 
 async function run() {
