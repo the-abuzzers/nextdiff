@@ -134,8 +134,7 @@ async function run() {
   const { stdout: diffResult } = await tools.runInWorkspace('git', [
     'diff',
     '--name-only',
-    'HEAD',
-    `origin/${pull.base.ref}`
+    `origin/${pull.base.ref}...`
   ])
   const pages = diffResult
     .split('\n')
