@@ -60,16 +60,57 @@ ${rest
 Commit <a href="https://github.com/${owner}/${repo}/commit/${sha}"><code>${shortSha}</code></a> (<a href="${url}">${url}</a>)`
 }
 
+async function upsertComment(pull, body) {
+  const { data: comments } = await tools.github.issues.listComments({
+    owner,
+    repo,
+    issue_number: pull.id
+  })
+
+  const comment = comments.find(comment =>
+    comment.body.startsWith('#### 📝Changed Next.js pages:')
+  )
+
+  if (!comment) {
+    await tools.github.issues.createComment({
+      owner,
+      repo,
+      issue_number: pull.id,
+      body
+    })
+  } else {
+    await tools.github.issues.updateComment({
+      owner,
+      repo,
+      comment_id: comment.id,
+      body
+    })
+  }
+}
+
 async function run() {
   if (state !== 'success') {
-    console.log('deployment status is not succeed, not running')
+    console.log('deployment status is not success, not running')
+    process.exit(78)
+    return
+  }
+
+  const {
+    data: [pull]
+  } = await tools.github.repos.listPullRequestsAssociatedWithCommit({
+    owner,
+    repo,
+    commit_sha: sha
+  })
+
+  if (!pull) {
+    console.log('no pr associated with this commit, not running')
     process.exit(78)
     return
   }
 
   // parse arguments
   const dir = (tools.arguments.dir || 'pages').replace(/^\/|\/$/g, '')
-  const base = tools.arguments.base || 'master'
   const max = tools.arguments.max ? Number(tools.arguments.max) : 6
 
   console.log('running git to get diff')
@@ -77,7 +118,7 @@ async function run() {
     'diff',
     '--name-only',
     'HEAD',
-    `origin/${base}`
+    `origin/${pull.base.ref}`
   ])
   const pages = diffResult
     .split('\n')
@@ -119,12 +160,7 @@ async function run() {
   console.log(`deployed to ${screenshotsUrl}`)
 
   console.log('commenting on pr')
-  await tools.github.repos.createCommitComment({
-    owner,
-    repo,
-    commit_sha: sha,
-    body: createCommentBody(pages, screenshotsUrl, max)
-  })
+  await upsertComment(pull, createCommentBody(pages, screenshotsUrl, max))
 
   process.exit(0)
   return
