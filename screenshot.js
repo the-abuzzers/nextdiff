@@ -57,7 +57,7 @@ ${rest
     : ''
 }
 
-Commit <a href="https://github.com/${owner}/${repo}/commit/${sha}"><code>${shortSha}</code></a> (<a href="${url}">${url}</a>)`
+Commit <a href="https://github.com/${owner}/${repo}/commit/${sha}"><code>${shortSha}</code></a> (<a href="${url}">${url}</a>).`
 }
 
 async function upsertComment(pull, body) {
