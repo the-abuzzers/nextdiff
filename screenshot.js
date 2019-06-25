@@ -64,7 +64,7 @@ async function upsertComment(pull, body) {
   const { data: comments } = await tools.github.issues.listComments({
     owner,
     repo,
-    issue_number: pull.id
+    issue_number: pull.number
   })
 
   const comment = comments.find(comment =>
@@ -75,7 +75,7 @@ async function upsertComment(pull, body) {
     await tools.github.issues.createComment({
       owner,
       repo,
-      issue_number: pull.id,
+      issue_number: pull.number,
       body
     })
   } else {
