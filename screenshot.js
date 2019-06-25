@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer')
 const { promisify } = require('util')
-const { join } = require('path')
+const { join, dirname } = require('path')
 const { Toolkit } = require('actions-toolkit')
 const exec = promisify(require('child_process').exec)
 const mkdir = promisify(require('fs').mkdir)
@@ -141,6 +141,7 @@ async function run() {
   })
   const firstPages = pages.slice(0, max)
   for (let page of firstPages) {
+    await mkdir(join(__dirname, dirname(page)), { recursive: true })
     const b = await browser.newPage()
     b.setViewport({ width: 1280, height: 800 })
     await b.goto(url + page)
